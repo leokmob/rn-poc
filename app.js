@@ -50,9 +50,9 @@ app.configure('production', function(){
 app.get('/', function(req, res){
   	res.render('index', {
     	title: 'Send Music SMS Demo',
-		from: "+16173598359",
-		to: "+16173598359",
-		text: "Demo sent you a musical message."
+		from: "+16175555555",
+		to: "+1617",
+		text: "Demo musical message"
 	});
 });
 
@@ -69,7 +69,7 @@ app.get('/playPage/:text/:from', function(req, res){
 
 app.post('/sendSMS', function(req, res){
 	var numbers = [],
-	    message = 'Demo-x sent you a musical message ',
+	    message = 'Demo sent you a musical message. Click this link to listen.',
 	    numToSend = numbers.length,
 	    numSent = 0;
 

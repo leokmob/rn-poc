@@ -11,9 +11,9 @@ var TwilioClient = require('twilio').Client,
     creds = require('./config').Credentials,
     client = new TwilioClient(creds.sid, creds.authToken, creds.hostname, {port:3002});
 
-//var phone = client.getPhoneNumber('+16173910669');
-
-//phone.setup(function() {
+//var phone1 = client.getPhoneNumber('+16173910669');
+//
+//phone1.setup(function() {
 //	phone.on('incomingSms', function(smsParams, response) {
 //		console.log('SMS Received:');
 //		console.log(smsParams)
@@ -107,6 +107,18 @@ app.get('/sendSMS', function(req, res){
 		    }
 		});	
 	});	
+});
+
+app.get('/incomingSMS', function(req, res){
+	console.log("GET ------------------");
+	console.log("incoming SMS !!!");
+	console.log("GET ------------------");	
+});
+
+app.post('/incomingSMS', function(req, res){
+	console.log("POST ------------------");
+	console.log("incoming SMS !!!");
+	console.log("POST ------------------");	
 });
 
 app.listen(3001);

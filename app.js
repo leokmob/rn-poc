@@ -9,7 +9,7 @@ var googl = require('goo.gl');
 var TwilioClient = require('twilio').Client,
     Twiml = require('twilio').Twiml,
     creds = require('./config').Credentials,
-    client = new TwilioClient(creds.sid, creds.authToken, creds.hostname);
+    client = new TwilioClient(creds.sid, creds.authToken, creds.hostname, {port:3002});
 
 //var phone = client.getPhoneNumber('+16173910669');
 

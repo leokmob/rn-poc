@@ -1,9 +1,12 @@
 h1= title
-p Welcome to #{title}
-div
-    a(href=googleShort, target="_blank")!= googleShort
-div
-    a(href=localShort, target="_blank")!= localShort
-div
-    a(href="/sendSMS") Try sending SMS!
-
+form(method="post", action="/sendSMS")
+    div
+        label(for="toText") To:
+        input(type="text", name="toText", id="toText", value=to, size="12")
+    br
+    div
+        label(for="textText") Text:
+        input(type="text", name="textText", id="textText", value=text, size="40")
+    br
+    div
+        input(type="submit", value="Send SMS")

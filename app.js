@@ -11,15 +11,6 @@ var TwilioClient = require('twilio').Client,
     creds = require('./config').Credentials,
     client = new TwilioClient(creds.sid, creds.authToken, creds.hostname, {port:3002});
 
-//var phone1 = client.getPhoneNumber('+16173910669');
-//
-//phone1.setup(function() {
-//	phone.on('incomingSms', function(smsParams, response) {
-//		console.log('SMS Received:');
-//		console.log(smsParams)
-//	});
-//});
-
 console.log(TwilioClient);
 console.log(Twiml);
 console.log(creds);
@@ -49,7 +40,6 @@ app.configure('development', function(){
 
 app.configure('production', function(){
   app.use(express.errorHandler()); 
-
 	// Set a developer key (see http://goo.gl/4DvFk for more info.)
 	// My API Project: https://code.google.com/apis/console/b/2/#project:579090106582:access
 	googl.setKey('AIzaSyA17gZAYe1yKH88jtsQDP3SXxHF7vEu_uo');
@@ -58,42 +48,45 @@ app.configure('production', function(){
 // Routes
 
 app.get('/', function(req, res){
-  	// Shorten a long url and output the result
-	googl.shorten('https://github.com/kaimallea/node-googl', function (googleShort) {
-		googl.shorten('http://' + req.headers.host + '/', function (localShort) {
-		  	res.render('index', {
-		    	title: 'Short URLS',
-				googleShort: googleShort.id,
-				localShort: localShort.id
-			});
-		});
-	});	
-});
-
-app.get('/playPage', function(req, res){
-  	res.render('playpage', {
-    	title: 'Musical Message ',
-		googleShort: "googleShort.id",
-		localShort: "localShort.id"
+  	res.render('index', {
+    	title: 'Send Music SMS Demo',
+		from: "+16173598359",
+		to: "+16173598359",
+		text: "Demo sent you a musical message."
 	});
 });
 
+app.get('/playPage/:text/:from', function(req, res){
+	console.log(req.params);
+  	res.render('playpage', {
+    	title: 'Musical Message ',
+		text: req.params.text,
+		from: req.params.from
+	});
+});
 
 // Our numbers list. Add more numbers here and they'll get the message
-var numbers = ['+16173598359'],
-    message = 'Leo sent you a musical message ',
-    numToSend = numbers.length,
-    numSent = 0;
 
-app.get('/sendSMS', function(req, res){
-	var phone = client.getPhoneNumber(creds.outgoing);	
-	googl.shorten('http://' + req.headers.host + '/playPage', function (playShort) {	
+app.post('/sendSMS', function(req, res){
+	var numbers = [],
+	    message = 'Demo-x sent you a musical message ',
+	    numToSend = numbers.length,
+	    numSent = 0;
+
+	var text = req.param('textText');
+	
+	var toNumber = req.param('toText');
+	numbers.push(toNumber);
+	numToSend = numbers.length;
+	
+	var playUrl = 'http://' + req.headers.host + '/playPage/' + encodeURIComponent(text) + '/' + encodeURIComponent(creds.outgoing);
+	console.log(playUrl);
+	
+	googl.shorten(playUrl, function (playShort) {	
+		var phone = client.getPhoneNumber(creds.outgoing);
 		phone.setup(function() {
-		    // We'll SMS each of the numbers in 'numbers', sending them the message
 		    for(var i = 0; i < numbers.length; i++) {
-			    console.log("URL: " + playShort.id);
 		        phone.sendSms(numbers[i], message + '   ' + playShort.id, null, function(sms) {
-					console.log("sending SMS");
 		            sms.once('processed', function(reqParams, response) {
 		                console.log('Message processed, request params follow');
 		                console.log(reqParams);
@@ -101,6 +94,7 @@ app.get('/sendSMS', function(req, res){
 		                if(numSent == numToSend) {
 		                    // We're done!
 		                    console.log("All SMS messages are sent.");
+							res.redirect("/");
 		                }
 		            });
 		        });

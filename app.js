@@ -118,6 +118,7 @@ app.get('/incomingSMS', function(req, res){
 app.post('/incomingSMS', function(req, res){
 	console.log("POST ------------------");
 	console.log("incoming SMS !!!");
+	console.log(req);
 	console.log("POST ------------------");	
 });
 

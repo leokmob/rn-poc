@@ -61,7 +61,8 @@ app.get('/playPage/:text/:from', function(req, res){
   	res.render('playpage', {
     	title: 'Musical Message ',
 		text: req.params.text,
-		from: req.params.from
+		from: req.params.from,
+		source_mp3: 'http://' + req.headers.host + '/audio/clip1.mp3'
 	});
 });
 

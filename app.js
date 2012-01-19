@@ -16,6 +16,8 @@ console.log(Twiml);
 console.log(creds);
 console.log(client);
 
+var RedNoteRepository = require('./lib/rednote-repository-memory').RedNoteRepository;
+
 var app = module.exports = express.createServer();
 
 // Configuration
@@ -47,12 +49,23 @@ app.configure('production', function(){
 
 // Routes
 
+var redNoteRepo = new RedNoteRepository('localhost', '8306')
+
 app.get('/', function(req, res){
   	res.render('index', {
     	title: 'Send Music SMS Demo',
 		from: "+16175555555",
 		to: "+1617",
 		text: "Demo musical message"
+	});
+});
+
+app.get('/select', function(req, res){
+	redNoteRepo.findAll(function(error, redNotes){
+		res.render('selectpage',{
+			title: "Select Red Note",
+			redNotes: redNotes
+		});
 	});
 });
 

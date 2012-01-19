@@ -18,6 +18,18 @@ console.log(client);
 
 var RedNoteRepository = require('./lib/rednote-repository-memory').RedNoteRepository;
 
+// Used: npm install mysql
+// https://github.com/felixge/node-mysql
+// This may be not the best or bug-free library. Simple one, though and actively developed
+
+var Client = require('mysql').Client;
+var client = new Client();
+
+client.host = '184.72.83.204';
+client.user = 'rednotemaster';
+client.password = 'RedNotePassword';
+client.database = "RedNoteDB";
+
 var app = module.exports = express.createServer();
 
 // Configuration
@@ -49,7 +61,26 @@ app.configure('production', function(){
 
 // Routes
 
-var redNoteRepo = new RedNoteRepository('localhost', '8306')
+app.get('/dbtest', function(req, res){
+	client.query(
+	  '	select * from actions',
+	  function selectCb(err, results, fields) {
+	    if (err) {
+	      res.end("Error" + err);
+	    }
+		console.log("=============================");
+	    console.log(results);
+		console.log("=============================");
+	    console.log(fields);
+	    client.end();
+	    res.end("Success");
+	  }
+	);
+});
+
+
+
+var redNoteRepo = new RedNoteRepository('localhost', '3306')
 
 app.get('/', function(req, res){
   	res.render('index', {

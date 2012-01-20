@@ -28,7 +28,7 @@ var client = new Client();
 client.host = '184.72.83.204';
 client.user = 'rednotemaster';
 client.password = 'RedNotePassword';
-client.database = "RedNoteDB";
+client.database = "RedNoteDatabase";
 
 var app = module.exports = express.createServer();
 
@@ -60,16 +60,33 @@ app.configure('production', function(){
 });
 
 // Routes
+// Used: npm install mysql
+// https://github.com/felixge/node-mysql
+// This may be not the best or bug-free library. Simple one, though and actively developed
+
+var Client = require('mysql').Client;
+var client = new Client();
+
+client.host = '184.72.83.204';
+client.user = 'rednotemaster';
+client.password = 'RedNotePassword';
+client.database = "RedNoteDatabase";
 
 app.get('/dbtest', function(req, res){
 	client.query(
-	  '	select * from actions',
+	  '	select rn.RedNoteID, mc.Name, mc.Lyrics, mc.Mood, mc.SubMood, mc.TimeMS, mc.FileURL, os.Genre from RedNote rn '+
+		    ' join MusicClip mc on rn.MusicClipID = mc.MusicClipID' +
+		    ' join OriginalSong os on mc.OriginalSongID = os.OriginalSongID;',
 	  function selectCb(err, results, fields) {
 	    if (err) {
 	      res.end("Error" + err);
 	    }
-		console.log("=============================");
+		console.log("====================================");
+		console.log("== List RedNotes with data =========");
+		console.log("====================================");
 	    console.log(results);
+		console.log("=============================");
+		console.log("=== Field Meta Data =========");
 		console.log("=============================");
 	    console.log(fields);
 	    client.end();

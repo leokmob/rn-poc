@@ -117,6 +117,27 @@ app.get('/select', function(req, res){
 	});
 });
 
+app.get('/selectdb', function(req, res){
+	client.query(
+	  '	select rn.RedNoteID, mc.Name, mc.Lyrics, mc.Mood, mc.SubMood, mc.TimeMS, mc.FileURL, os.Genre from RedNote rn '+
+		    ' join MusicClip mc on rn.MusicClipID = mc.MusicClipID' +
+		    ' join OriginalSong os on mc.OriginalSongID = os.OriginalSongID;',
+	    function selectCb(err, results, fields) {
+		    if (err) {
+		      res.end("Error" + err);
+		    }
+			else {
+				res.render('selectpagedb',{
+					title: "Select Red Note",
+					redNotes: results
+				});
+			}
+		    client.end();
+	    }
+	);
+});
+
+
 app.get('/playPage/:text/:from', function(req, res){
 	console.log(req.params);
   	res.render('playpage', {

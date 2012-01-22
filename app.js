@@ -16,12 +16,14 @@ console.log(Twiml);
 console.log(twilioCreds);
 console.log(client);
 
-var ClickEventRepository = require('./lib/clickevent-repository-mysql').ClickEventRepository,
+var MessageRepository = require('./lib/message-repository-mysql').MessageRepository,
+	ClickEventRepository = require('./lib/clickevent-repository-mysql').ClickEventRepository,
 	RedNoteRepository = require('./lib/rednote-repository-mysql').RedNoteRepository,
 	dbOptions = require('./config').DbCredentials;
 	
 var redNoteRepo = new RedNoteRepository(dbOptions);
 var clickEventRepo = new ClickEventRepository(dbOptions);
+var messageRepo = new MessageRepository(dbOptions);
 
 var app = module.exports = express.createServer();
 
@@ -55,7 +57,7 @@ app.configure('production', function(){
 // Routes
 
 app.get('/', function(req, res){
-  	res.render('index', {
+  	res.render('compose', {
     	title: 'Send Music SMS Demo',
 		from: "+16175555555",
 		to: "+1617",
@@ -98,6 +100,26 @@ app.get('/track', function(req, res){
 		res.end('DONE! ID=' + firstInsertedID);
 	});
 });
+
+app.get('/msg', function(req, res){
+	message = {
+					RedNoteID: 1, 
+					OriginPartnerID: 1, 
+					State: 'sent', 
+					FromAddress: '+15556667788', 
+					ToAddress: '+1112223344', 
+					Text: "Test message DB", 
+					IsSponsorMessage: false, 
+					CreatedByUserID: null,
+					EndUserID: 1
+				};
+	messageRepo.save(message, function(error, firstInsertedID){
+		messageRepo.findById(firstInsertedID, function(error, results){
+			res.end('DONE! ID=' + firstInsertedID + ' Text = ' + results[0].Text);			
+		})
+	});
+});
+
 
 app.get('/playPage/:text/:from', function(req, res){
 	console.log(req.params);

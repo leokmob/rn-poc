@@ -8,27 +8,20 @@ var googl = require('goo.gl');
 
 var TwilioClient = require('twilio').Client,
     Twiml = require('twilio').Twiml,
-    creds = require('./config').Credentials,
-    client = new TwilioClient(creds.sid, creds.authToken, creds.hostname, {port:3002});
+    twilioCreds = require('./config').TwilioCredentials,
+    client = new TwilioClient(twilioCreds.sid, twilioCreds.authToken, twilioCreds.hostname, {port:3002});
 
 console.log(TwilioClient);
 console.log(Twiml);
-console.log(creds);
+console.log(twilioCreds);
 console.log(client);
 
-var RedNoteRepository = require('./lib/rednote-repository-memory').RedNoteRepository;
-
-// Used: npm install mysql
-// https://github.com/felixge/node-mysql
-// This may be not the best or bug-free library. Simple one, though and actively developed
-
-var Client = require('mysql').Client;
-var client = new Client();
-
-client.host = '184.72.83.204';
-client.user = 'rednotemaster';
-client.password = 'RedNotePassword';
-client.database = "RedNoteDatabase";
+var ClickEventRepository = require('./lib/clickevent-repository-mysql').ClickEventRepository,
+	RedNoteRepository = require('./lib/rednote-repository-mysql').RedNoteRepository,
+	dbOptions = require('./config').DbCredentials;
+	
+var redNoteRepo = new RedNoteRepository(dbOptions);
+var clickEventRepo = new ClickEventRepository(dbOptions);
 
 var app = module.exports = express.createServer();
 
@@ -60,44 +53,6 @@ app.configure('production', function(){
 });
 
 // Routes
-// Used: npm install mysql
-// https://github.com/felixge/node-mysql
-// This may be not the best or bug-free library. Simple one, though and actively developed
-
-var Client = require('mysql').Client;
-var client = new Client();
-
-client.host = '184.72.83.204';
-client.user = 'rednotemaster';
-client.password = 'RedNotePassword';
-client.database = "RedNoteDatabase";
-
-app.get('/dbtest', function(req, res){
-	client.query(
-	  '	select rn.RedNoteID, mc.Name, mc.Lyrics, mc.Mood, mc.SubMood, mc.TimeMS, mc.FileURL, os.Genre from RedNote rn '+
-		    ' join MusicClip mc on rn.MusicClipID = mc.MusicClipID' +
-		    ' join OriginalSong os on mc.OriginalSongID = os.OriginalSongID;',
-	  function selectCb(err, results, fields) {
-	    if (err) {
-	      res.end("Error" + err);
-	    }
-		console.log("====================================");
-		console.log("== List RedNotes with data =========");
-		console.log("====================================");
-	    console.log(results);
-		console.log("=============================");
-		console.log("=== Field Meta Data =========");
-		console.log("=============================");
-	    console.log(fields);
-	    client.end();
-	    res.end("Success");
-	  }
-	);
-});
-
-
-
-var redNoteRepo = new RedNoteRepository('localhost', '3306')
 
 app.get('/', function(req, res){
   	res.render('index', {
@@ -105,6 +60,15 @@ app.get('/', function(req, res){
 		from: "+16175555555",
 		to: "+1617",
 		text: "Demo musical message"
+	});
+});
+
+app.get('/select/:rednoteid', function(req, res){
+	redNoteRepo.findById(req.params.rednoteid, function(error, redNotes){
+		res.render('selectpage',{
+			title: "Select Red Note",
+			redNotes: redNotes
+		});
 	});
 });
 
@@ -117,26 +81,22 @@ app.get('/select', function(req, res){
 	});
 });
 
-app.get('/selectdb', function(req, res){
-	client.query(
-	   'select rn.RedNoteID, mc.Name, mc.Lyrics, mc.Mood, mc.SubMood, mc.TimeMS, mc.FileURL, os.Genre, ss.PurchaseURL' +
-		' from RedNote rn' +
-		    ' join MusicClip mc on rn.MusicClipID = mc.MusicClipID' +
-		    ' join OriginalSong os on mc.OriginalSongID = os.OriginalSongID' +
-		    ' join SongStore ss on ss.OriginalSongID = mc.OriginalSongID',
-	    function selectCb(err, results, fields) {
-		    if (err) {
-		      res.end("Error" + err);
-		    }
-			else {
-				res.render('selectpagedb',{
-					title: "Select Red Note",
-					redNotes: results
-				});
-			}
-		    client.end();
-	    }
-	);
+app.get('/track', function(req, res){
+	clickEvent = {
+					EventType: "TEST JS", 
+					EndUserID: 5,
+					MessageID: 5,
+					RedNoteID: 5,
+					PartnerID: 5,
+					Hostname: null,
+					SomeRequestParams: null,
+					CustomerID: null,
+					IPAddress: null,
+					UserAgent: null
+				};
+	clickEventRepo.save(clickEvent, function(error, firstInsertedID){
+		res.end('DONE! ID=' + firstInsertedID);
+	});
 });
 
 app.get('/playPage/:text/:from', function(req, res){
@@ -163,11 +123,11 @@ app.post('/sendSMS', function(req, res){
 	numbers.push(toNumber);
 	numToSend = numbers.length;
 	
-	var playUrl = 'http://' + req.headers.host + '/playPage/' + encodeURIComponent(text) + '/' + encodeURIComponent(creds.outgoing);
+	var playUrl = 'http://' + req.headers.host + '/playPage/' + encodeURIComponent(text) + '/' + encodeURIComponent(twilioCreds.outgoing);
 	console.log(playUrl);
 	
 	googl.shorten(playUrl, function (playShort) {	
-		var phone = client.getPhoneNumber(creds.outgoing);
+		var phone = client.getPhoneNumber(twilioCreds.outgoing);
 		phone.setup(function() {
 		    for(var i = 0; i < numbers.length; i++) {
 		        phone.sendSms(numbers[i], message + '   ' + playShort.id, null, function(sms) {

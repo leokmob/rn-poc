@@ -120,6 +120,14 @@ app.get('/msg', function(req, res){
 	});
 });
 
+app.get('/state', function(req, res){
+	messageRepo.changeState(1, 'newState' + (new Date()).toString(), function(error, messageID){
+		messageRepo.findById(messageID, function(error, results){
+			res.end('DONE! ID=' + messageID + ' Text = ' + results[0].State);			
+		})
+	});
+});
+
 
 app.get('/playPage/:text/:from', function(req, res){
 	console.log(req.params);

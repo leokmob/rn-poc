@@ -74,6 +74,7 @@ app.get('/select/:rednoteid', function(req, res){
 	});
 });
 
+
 app.get('/select', function(req, res){
 	redNoteRepo.findAll(function(error, redNotes){
 		res.render('selectpage',{
@@ -128,10 +129,18 @@ app.get('/state', function(req, res){
 	});
 });
 
+app.get('/jplay', function(req, res){
+	res.render('jplaypage',{
+		title: "Select Red Note",
+		from: "me",
+		text: "you",
+		source_mp3: 'http://' + req.headers.host + '/audio/clip1.mp3'
+	});
+});
 
 app.get('/playPage/:text/:from', function(req, res){
 	console.log(req.params);
-  	res.render('playpage', {
+  	res.render('jplaypage', {
     	title: 'Musical Message ',
 		text: req.params.text,
 		from: req.params.from,

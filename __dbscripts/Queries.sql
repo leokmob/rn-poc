@@ -28,3 +28,5 @@ VALUES
 SELECT LAST_INSERT_ID() LAST_ID;
 
 select * from ClickEvent;
+
+select * from Message
